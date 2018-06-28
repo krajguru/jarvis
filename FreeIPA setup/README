@@ -4,7 +4,12 @@ IPA SERVER INSTALLATION
 
 1. Download all the files(except ipa-client-install.sh) in /tmp directory on the squadron node where you want to setup FreeIPA server.
 NOTE: A node outside cluster environment.
-2. Run the ipa-server-install.sh script (Make sure it has execute permissions)
+2. Run the ipa-server-install.sh script as root user (Make sure ipa-client-install.sh and ipa-add-groups-members.sh have execute permissions)
+---
+# chmod 770 /tmp/ipa-client-install.sh
+# chmod 770 /tmp/ipa-add-groups-members.sh
+---
+
 Below are the details of what the ipa-server-install.sh script does :
   i.   It will install IPA server on that node, with Kerberos REALM and LDAP domain as the domain name of the system. 
        For example : If your FQDN is node1.foo.com, it will setup IPA server with Kerberos realm FOO.COM and LDAP domain dc=foo.dc=com.
