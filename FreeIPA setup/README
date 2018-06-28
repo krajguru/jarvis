@@ -9,7 +9,7 @@ Below are the details of what the ipa-server-install.sh script does :
   i.   It will install IPA server on that node, with Kerberos REALM and LDAP domain as the domain name of the system. 
        For example : If your FQDN is node1.foo.com, it will setup IPA server with Kerberos realm FOO.COM and LDAP domain dc=foo.dc=com.
   ii.  The default password for "admin" user is "secret#1"
-  iii. It adds 200 users, 10 groups and each group has 10 users. 
+  iii. It adds ~100 users, 10 groups and each group has around 10 users. 
        Group names are in groups.txt file, to see group details use the below commands :
        ---
        # kinit admin
