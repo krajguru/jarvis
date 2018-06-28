@@ -1,9 +1,11 @@
 This script is designed to setup FreeIPA environment server/client [Tailored for squadron env, but can be made generic]
 
-1. Download all the files(except ipa-client-install.sh) in /tmp directory on the node where you want to setup FreeIPA server.
-2. Run the ipa-server-install.sh script (Make sure it has execute permissions)
+IPA SERVER INSTALLATION
 
-Below are the details of what the script sets up :
+1. Download all the files(except ipa-client-install.sh) in /tmp directory on the squadron node where you want to setup FreeIPA server.
+NOTE: A node outside cluster environment.
+2. Run the ipa-server-install.sh script (Make sure it has execute permissions)
+Below are the details of what the ipa-server-install.sh script does :
   i.   It will install IPA server on that node, with Kerberos REALM and LDAP domain as the domain name of the system. 
        For example : If your FQDN is node1.foo.com, it will setup IPA server with Kerberos realm FOO.COM and LDAP domain dc=foo.dc=com.
   ii.  The default password for "admin" user is "secret#1"
@@ -13,3 +15,8 @@ Below are the details of what the script sets up :
        # kinit admin
        # ipa group-show <group-name>
        ---
+
+IPA CLIENT INSTALLATION :
+
+1. Download the ipa-client-install.sh on all the squadron nodes in the cluster except IPA Server node
+2. Run the ipa-client-install.sh script
