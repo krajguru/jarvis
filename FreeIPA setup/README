@@ -4,8 +4,9 @@ IPA SERVER INSTALLATION
 
 1. Download all the files(except ipa-client-install.sh) in /tmp directory on the squadron node where you want to setup FreeIPA server.
 NOTE: A node outside cluster environment.
-2. Run the ipa-server-install.sh script as root user (Make sure ipa-client-install.sh and ipa-add-groups-members.sh have execute permissions)
+2. Run the ipa-server-install.sh script as root user (Make sure ipa-server-install.sh, ipa-client-install.sh and ipa-add-groups-members.sh have execute permissions)
 ---
+# chmod 770 /tmp/ipa-server-install.sh
 # chmod 770 /tmp/ipa-client-install.sh
 # chmod 770 /tmp/ipa-add-groups-members.sh
 ---
