@@ -11,7 +11,7 @@ source /tmp/ipa-setup.properties
 
 case "$OS_VERSION" in
 
-        7) yum install -q -y ipa-server bind bind-dyndb-ldap
+        7) yum install -q -y ipa-server bind bind-dyndb-ldap ipa-server-dns
            echo net.ipv6.conf.lo.disable_ipv6=0 >> /etc/sysctl.conf
            sysctl -p
            service messagebus restart
