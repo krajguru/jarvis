@@ -1,6 +1,6 @@
 #!/bin/bash
 
-yum install -y ipa-client
+yum install -y -q ipa-client
 service messagebus restart
 
 ## Edit resolv.conf to point to IPA server's DNS 
