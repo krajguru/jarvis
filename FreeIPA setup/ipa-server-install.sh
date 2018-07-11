@@ -39,10 +39,4 @@ case "$OS_VERSION" in
 
            #rm -rf $USERS $GROUPS /tmp/ipa-add-users.sh /tmp/ipa-add-groups.txt
         ;;
-         6) yum install -q -y ipa-server bind bind-dyndb-ldap
-            echo net.ipv6.conf.lo.disable_ipv6=0 >> /etc/sysctl.conf
-            sysctl -p
-            ipa-server-install -a 'secret#1' --hostname=`hostname` -r `hostname -d| awk '{print toupper($0)}'` -p 'secret#1' -n `hostname -d` -U
-            sed -i.bak 's/.*default_ccache_name.*/default_ccache_name = FILE:\/tmp\/krb5cc_%{uid}/' /etc/krb5.conf
-        ;;
 esac
