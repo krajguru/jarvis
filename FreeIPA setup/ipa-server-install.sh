@@ -17,7 +17,12 @@ case "$OS_VERSION" in
            service messagebus restart
            ipa-server-install -a 'secret#1' --hostname=`hostname` -r `hostname -d| awk '{print toupper($0)}'` -p 'secret#1' -n `hostname -d` --setup-dns --no-forwarders  --allow-zone-overlap -U
            sed -i.bak 's/.*default_ccache_name.*/default_ccache_name = FILE:\/tmp\/krb5cc_%{uid}/' /etc/krb5.conf
+      
            echo secret#1 | kinit admin
+           
+        ## Edit global password policy
+        
+           ipa pwpolicy-mod --maxlife=0 --minlife=0 global_policy
 
         ## Add users in IPA
 
