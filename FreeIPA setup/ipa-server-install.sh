@@ -19,23 +19,28 @@ case "$OS_VERSION" in
            sed -i.bak 's/.*default_ccache_name.*/default_ccache_name = FILE:\/tmp\/krb5cc_%{uid}/' /etc/krb5.conf
            echo secret#1 | kinit admin
 
-        ## Add users to IPA
+        ## Add users in IPA
 
            awk '{print "echo secret#1 | ipa user-add ",$1,"--first ",$2,"--last ",$3,"--password --shell=/bin/bash"}' /tmp/users.txt  > /tmp/ipa-add-users.sh
            chmod 777 /tmp/ipa-add-users.sh
            sh /tmp/ipa-add-users.sh | tee /tmp/ipa-add-users.out
 
-        ## Add groups to IPA
+        ## Add groups in IPA
 
            awk '{print "ipa group-add",$1,""}' /tmp/groups.txt > /tmp/ipa-add-groups.txt
            chmod 777 /tmp/ipa-add-groups.txt
            sh /tmp/ipa-add-groups.txt | tee /tmp/ipa-add-group.out
 
 
-        ## Add groups to IPA
+        ## Add group-members in IPA
 
            chmod 777 /tmp/ipa-add-groups-members.sh
            sh /tmp/ipa-add-groups-members.sh
+        
+        ## Edit resolv.conf to point to IPA server's DNS
+        
+           echo "search `hostname -d`" > /tmp/resolv.conf ; echo "nameserver `grep node2 /etc/hosts | awk -F ' ' '{print $1}'`" >> /tmp/resolv.conf ; cat /tmp/resolv.conf > /etc/resolv.conf ; echo "cat /tmp/resolv.conf > /etc/resolv.conf" >> /etc/rc.local
+           chmod +x /etc/rc.d/rc.local
 
            #rm -rf $USERS $GROUPS /tmp/ipa-add-users.sh /tmp/ipa-add-groups.txt
         ;;
