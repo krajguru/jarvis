@@ -41,7 +41,20 @@ case "$OS_VERSION" in
 
            chmod 777 /tmp/ipa-add-groups-members.sh
            sh /tmp/ipa-add-groups-members.sh
+           
+        ## Add administrative user in IPA for HDP cluster 
         
+           echo secret#1 | ipa user-add hadoopadmin --first=Hadoop --last=Admin --password
+           printf "secret#1\nsecret#1\nsecret#1" | kinit hadoopadmin
+           echo secret#1 | kinit admin
+           
+        ## Creating a role and adding the required privileges
+        
+           ipa role-add hadoopadminrole
+           ipa role-add-privilege hadoopadminrole --privileges="User Administrators" 
+           ipa role-add-privilege hadoopadminrole --privileges="Service Administrators"
+           ipa role-add-member hadoopadminrole --users=hadoopadmin
+           
         ## Edit resolv.conf to point to IPA server's DNS
         
            echo "search `hostname -d`" > /tmp/resolv.conf ; echo "nameserver `grep node2 /etc/hosts | awk -F ' ' '{print $1}'`" >> /tmp/resolv.conf ; cat /tmp/resolv.conf > /etc/resolv.conf ; echo "cat /tmp/resolv.conf > /etc/resolv.conf" >> /etc/rc.local
