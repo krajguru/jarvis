@@ -28,13 +28,13 @@ case "$OS_VERSION" in
 
            awk '{print "echo secret#1 | ipa user-add ",$1,"--first ",$2,"--last ",$3,"--password --shell=/bin/bash"}' /tmp/users.txt  > /tmp/ipa-add-users.sh
            chmod 777 /tmp/ipa-add-users.sh
-           sh /tmp/ipa-add-users.sh | tee /tmp/ipa-add-users.out
+           sh /tmp/ipa-add-users.sh | tee /tmp/users.out
 
         ## Add groups in IPA
 
            awk '{print "ipa group-add",$1,""}' /tmp/groups.txt > /tmp/ipa-add-groups.txt
            chmod 777 /tmp/ipa-add-groups.txt
-           sh /tmp/ipa-add-groups.txt | tee /tmp/ipa-add-group.out
+           sh /tmp/ipa-add-groups.txt | tee /tmp/groups.out
 
 
         ## Add group-members in IPA
