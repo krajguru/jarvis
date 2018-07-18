@@ -57,7 +57,7 @@ case "$OS_VERSION" in
            
         ## Edit resolv.conf to point to IPA server's DNS
         
-           echo "search `hostname -d`" > /tmp/resolv.conf ; echo "nameserver `grep node2 /etc/hosts | awk -F ' ' '{print $1}'`" >> /tmp/resolv.conf ; cat /tmp/resolv.conf > /etc/resolv.conf ; echo "cat /tmp/resolv.conf > /etc/resolv.conf" >> /etc/rc.local
+           echo "service sssd restart" >> /etc/rc.local ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /etc/rc.local ; echo "echo \"nameserver `grep node2 /etc/hosts | awk -F ' ' '{print $1}'`\" >> /etc/resolv.conf" >> /etc/rc.local
            chmod +x /etc/rc.d/rc.local
 
            #rm -rf $USERS $GROUPS /tmp/ipa-add-users.sh /tmp/ipa-add-groups.txt
