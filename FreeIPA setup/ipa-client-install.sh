@@ -5,9 +5,9 @@ service messagebus restart
 
 ## Edit resolv.conf to point to IPA server's DNS 
 
-echo "service sssd restart" >> /etc/rc.local ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /etc/rc.local ; echo "echo \"nameserver \`grep node2 /etc/hosts | awk -F ' ' '{print \$1}'\`\" >> /etc/resolv.conf" >> /etc/rc.local
-chmod +x /etc/rc.d/rc.local
-sh /etc/rc.local
+echo "service sssd restart" > /tmp/dns.sh ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /tmp/dns.sh ; echo "echo \"nameserver `grep node2 /etc/hosts | awk -F ' ' '{print $1}'`\" >> /etc/resolv.conf" >> /tmp/dns.sh ; chmod 777 /tmp/dns.sh
+sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
+sh /tmp/dns.sh
 
 ## Setup IPA Client
 
