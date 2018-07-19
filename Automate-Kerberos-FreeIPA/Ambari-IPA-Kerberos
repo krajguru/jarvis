@@ -1,0 +1,120 @@
+#!/bin/bash
+
+## Copy payload.kerberos_descriptor file to /tmp directory on ambari server
+
+AMBARI_SERVER=`grep node1 /etc/hosts | awk '{print $2}'`
+REALM=`hostname -d| awk '{print toupper($0)}'`
+KDC=`grep node2 /etc/hosts | awk '{print $2}'`
+PRINCIPAL=admin@`hostname -d| awk '{print toupper($0)}'`
+PASSWORD=secret#1
+AMBARI_PASSWORD=
+cluster_name="$(curl -u admin:krajguru -i -H 'X-Requested-By: ambari'  http://$AMBARI_SERVER:8080/api/v1/clusters | sed -n 's/.*"cluster_name" : "\([^\"]*\)".*/\1/p')"
+
+#Add the KERBEROS Service to cluster
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services/KERBEROS
+sleep1
+
+#Add the KERBEROS_CLIENT component to the KERBEROS service
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services/KERBEROS/components/KERBEROS_CLIENT
+sleep 1
+
+## Create the payload (krb5-conf, kerberos-env)
+
+echo "[
+  {
+    \"Clusters\": {
+      \"desired_config\": {
+        \"type\": \"krb5-conf\",
+        \"tag\": \"version21\",
+        \"properties\": {
+          \"domains\":\"\",
+          \"manage_krb5_conf\": \"false\",
+          \"conf_dir\":\"/etc\",
+          \"content\" : \"[libdefaults]\n  renew_lifetime = 7d\n  forwardable = true\n  default_realm = {{realm}}\n  ticket_lifetime = 24h\n  dns_lookup_realm = false\n  dns_lookup_kdc = false\n  default_ccache_name = /tmp/krb5cc_%{uid}\n  #default_tgs_enctypes = {{encryption_types}}\n  #default_tkt_enctypes = {{encryption_types}}\n{% if domains %}\n[domain_realm]\n{%- for domain in domains.split(',') %}\n  {{domain|trim()}} = {{realm}}\n{%- endfor %}\n{% endif %}\n[logging]\n  default = FILE:/var/log/krb5kdc.log\n  admin_server = FILE:/var/log/kadmind.log\n  kdc = FILE:/var/log/krb5kdc.log\n\n[realms]\n  {{realm}} = {\n{%- if master_kdc %}\n    master_kdc = {{master_kdc|trim()}}\n{%- endif -%}\n{%- if kdc_hosts > 0 -%}\n{%- set kdc_host_list = kdc_hosts.split(',')  -%}\n{%- if kdc_host_list and kdc_host_list|length > 0 %}\n    admin_server = {{admin_server_host|default(kdc_host_list[0]|trim(), True)}}\n{%- if kdc_host_list -%}\n{%- if master_kdc and (master_kdc not in kdc_host_list) %}\n    kdc = {{master_kdc|trim()}}\n{%- endif -%}\n{% for kdc_host in kdc_host_list %}\n    kdc = {{kdc_host|trim()}}\n{%- endfor -%}\n{% endif %}\n{%- endif %}\n{%- endif %}\n  }\n\n{# Append additional realm declarations below #}\"
+        }
+      }
+    }
+  },
+  {
+    \"Clusters\": {
+      \"desired_config\": {
+        \"type\": \"kerberos-env\",
+        \"tag\": \"version21\",
+        \"properties\": {
+          \"kdc_type\": \"ipa\",
+          \"manage_identities\": \"true\",
+          \"create_ambari_principal\": \"true\",
+          \"manage_auth_to_local\": \"true\",
+          \"install_packages\": \"true\",
+          \"encryption_types\": \"aes des3-cbc-sha1 rc4 des-cbc-md5\",
+          \"realm\" : \"$REALM\",
+          \"kdc_hosts\" : \"$KDC\",
+          \"master_kdc\" : \"$KDC\",
+          \"admin_server_host\" : \"$KDC\",
+          \"executable_search_paths\" : \"/usr/bin, /usr/kerberos/bin, /usr/sbin, /usr/lib/mit/bin, /usr/lib/mit/sbin\",
+          \"service_check_principal_name\" : \"\${cluster_name}-\${short_date}\",
+          \"case_insensitive_username_rules\" : \"false\"
+        }
+      }
+    }
+  }
+]" > /tmp/payload
+
+# Create and set KERBEROS service configurations
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/payload http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name
+
+sleep 1
+
+# Create the KERBEROS_CLIENT host components , for each host
+
+h1=`grep node1 /etc/hosts | awk '{print $2}'`
+h2=`grep node2 /etc/hosts | awk '{print $2}'`
+h3=`grep node3 /etc/hosts | awk '{print $2}'`
+h4=`grep node4 /etc/hosts | awk '{print $2}'`
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h1
+sleep 2
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h2
+sleep 2
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h3
+sleep 2
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h4
+sleep 2
+
+# Stop all services
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"RequestInfo":{"context":"Stop Service"},"Body":{"ServiceInfo":{"state":"INSTALLED"}}}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services
+sleep 180
+
+# Set the Kerberos Descriptor
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d @/tmp/payload.kerberos_descriptor http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/artifacts/kerberos_descriptor
+sleep 1
+# Create and Set the KDC administrator credentials
+
+echo "{
+  \"Credential\" : {
+    \"principal\" : \"$PRINCIPAL\",
+    \"key\" : \"$PASSWORD\",
+    \"type\" : \"temporary\"
+  }
+}" > /tmp/payload.cred
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d @/tmp/payload.cred http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/credentials/kdc.admin.credential
+sleep 1 
+
+## Enable Kerberos
+
+echo "{
+  \"Clusters\": {
+    \"security_type\" : \"KERBEROS\"
+  }
+}" > /tmp/payload.enable_kerberos
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/payload.enable_kerberos http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/
+
+## Start all the services :
+
+curl -H "X-Requested-By:ambari" -u admin:krajguru -i -X PUT -d '{"ServiceInfo": {"state" : "STARTED"}}' http://$AMBARI_SEVER:8080/api/v1/clusters/$cluster_name/services
+sleep 300
