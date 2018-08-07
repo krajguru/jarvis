@@ -8,7 +8,7 @@ KDC=`grep node2 /etc/hosts | awk '{print $2}'`
 PRINCIPAL=admin@`hostname -d| awk '{print toupper($0)}'`
 PASSWORD=secret#1
 AMBARI_PASSWORD=
-cluster_name="$(curl -u admin:krajguru -i -H 'X-Requested-By: ambari'  http://$AMBARI_SERVER:8080/api/v1/clusters | sed -n 's/.*"cluster_name" : "\([^\"]*\)".*/\1/p')"
+cluster_name="$(curl -u admin:$AMBARI_PASSWORD -i -H 'X-Requested-By: ambari'  http://$AMBARI_SERVER:8080/api/v1/clusters | sed -n 's/.*"cluster_name" : "\([^\"]*\)".*/\1/p')"
 
 #Add the KERBEROS Service to cluster
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services/KERBEROS
