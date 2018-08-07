@@ -64,6 +64,7 @@ case "$OS_VERSION" in
            echo "a_ip_addr=\$(grep \$host  /etc/hosts | awk '{print \$1}')" >> /tmp/dns.sh
            echo "echo secret#1 | kinit admin" >> /tmp/dns.sh
            echo "ipa dnsrecord-mod \$domain. \$host --a-rec=\$a_rec --a-ip-address=\$a_ip_addr" >> /tmp/dns.sh
+           echo "exit 0" >> /tmp/dns.sh
            sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
            sh /tmp/dns.sh
            
