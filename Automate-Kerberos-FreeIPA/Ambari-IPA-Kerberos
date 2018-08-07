@@ -116,5 +116,5 @@ curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/pay
 sleep 3
 ## Start all the services :
 
-curl -H "X-Requested-By:ambari" -u admin:krajguru -i -X PUT -d '{"ServiceInfo": {"state" : "STARTED"}}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"ServiceInfo": {"state" : "STARTED"}}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services
 sleep 300
