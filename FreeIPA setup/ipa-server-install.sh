@@ -7,6 +7,12 @@
 #USERS=/tmp/users.txt
 #GROUPS=/tmp/groups.txt
 
+echo client.api.port=8081 >> /etc/ambari-server/conf/ambari.properties
+
+ambari-server restart
+
+sleep 60
+
 source /tmp/ipa-setup.properties
 
 case "$OS_VERSION" in
