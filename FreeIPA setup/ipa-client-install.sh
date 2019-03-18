@@ -5,7 +5,7 @@ service messagebus restart
 
 ## Edit resolv.conf to point to IPA server's DNS 
 
-echo "service sssd restart" > /tmp/dns.sh ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /tmp/dns.sh ; echo "echo \"nameserver \`grep node2 /etc/hosts | awk -F ' ' '{print \$1}'\`\" >> /etc/resolv.conf" >> /tmp/dns.sh ; chmod 777 /tmp/dns.sh
+echo "service sssd restart" > /tmp/dns.sh ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /tmp/dns.sh ; echo "echo \"nameserver \`grep node1 /etc/hosts | awk -F ' ' '{print \$1}'\`\" >> /etc/resolv.conf" >> /tmp/dns.sh ; chmod 777 /tmp/dns.sh
            echo "domain=\$(hostname -d)" >> /tmp/dns.sh
            echo "host=\$(hostname -s)" >> /tmp/dns.sh
            echo "a_rec=\$(nslookup \`hostname -s\` | tail -n2 | head -n1 | awk -F ' ' '{print \$2}')" >> /tmp/dns.sh
@@ -17,7 +17,7 @@ sh /tmp/dns.sh
 
 ## Setup IPA Client
 
-ipa-client-install --password 'secret#1' --domain `hostname -d` --server `grep node2 /etc/hosts | awk '{print $2}'` --principal admin@`hostname -d| awk '{print toupper($0)}'` --password secret#1 --enable-dns-updates --unattended
+ipa-client-install --password 'secret#1' --domain `hostname -d` --server `grep node1 /etc/hosts | awk '{print $2}'` --principal admin@`hostname -d| awk '{print toupper($0)}'` --password secret#1 --enable-dns-updates --unattended
 
 ## Change the Kerberos cache to FILE cache from KEYRING
 
