@@ -7,8 +7,9 @@
 #USERS=/tmp/users.txt
 #GROUPS=/tmp/groups.txt
 
-echo client.api.port=8081 >> /etc/ambari-server/conf/ambari.properties
+## Change the default port of Ambari server to 8081 as IPA servers port conflicts with Ambari 
 
+echo client.api.port=8081 >> /etc/ambari-server/conf/ambari.properties
 ambari-server restart
 
 source /tmp/ipa-setup.properties
