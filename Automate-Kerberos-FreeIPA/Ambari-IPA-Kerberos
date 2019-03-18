@@ -8,14 +8,15 @@ KDC=`grep node2 /etc/hosts | awk '{print $2}'`
 PRINCIPAL=admin@`hostname -d| awk '{print toupper($0)}'`
 PASSWORD=secret#1
 AMBARI_PASSWORD=$1
-cluster_name="$(curl -u admin:$AMBARI_PASSWORD -i -H 'X-Requested-By: ambari'  http://$AMBARI_SERVER:8080/api/v1/clusters | sed -n 's/.*"cluster_name" : "\([^\"]*\)".*/\1/p')"
+PORT=8081
+cluster_name="$(curl -u admin:$AMBARI_PASSWORD -i -H 'X-Requested-By: ambari'  http://$AMBARI_SERVER:$PORT/api/v1/clusters | sed -n 's/.*"cluster_name" : "\([^\"]*\)".*/\1/p')"
 
 #Add the KERBEROS Service to cluster
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services/KERBEROS
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/services/KERBEROS
 sleep1
 
 #Add the KERBEROS_CLIENT component to the KERBEROS service
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services/KERBEROS/components/KERBEROS_CLIENT
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/services/KERBEROS/components/KERBEROS_CLIENT
 sleep 1
 
 ## Create the payload (krb5-conf, kerberos-env)
@@ -62,34 +63,34 @@ echo "[
 
 # Create and set KERBEROS service configurations
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/payload http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/payload http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name
 
 sleep 1
 
 # Create the KERBEROS_CLIENT host components , for each host
 
-h1=`grep node1 /etc/hosts | awk '{print $2}'`
+#h1=`grep node1 /etc/hosts | awk '{print $2}'`
 h2=`grep node2 /etc/hosts | awk '{print $2}'`
 h3=`grep node3 /etc/hosts | awk '{print $2}'`
 h4=`grep node4 /etc/hosts | awk '{print $2}'`
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h1
+#curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h1
+#sleep 2
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h2
 sleep 2
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h2
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h3
 sleep 2
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h3
-sleep 2
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h4
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h4
 sleep 2
 
 # Stop all services
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"RequestInfo":{"context":"Stop Service"},"Body":{"ServiceInfo":{"state":"INSTALLED"}}}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services
-sleep 150
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"RequestInfo":{"context":"Stop Service"},"Body":{"ServiceInfo":{"state":"INSTALLED"}}}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/services
+sleep 70
 
 # Set the Kerberos Descriptor
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d @/tmp/payload.kerberos_descriptor http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/artifacts/kerberos_descriptor
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d @/tmp/payload.kerberos_descriptor http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/artifacts/kerberos_descriptor
 sleep 1
 # Create and Set the KDC administrator credentials
 
@@ -101,7 +102,7 @@ echo "{
   }
 }" > /tmp/payload.cred
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d @/tmp/payload.cred http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/credentials/kdc.admin.credential
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d @/tmp/payload.cred http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/credentials/kdc.admin.credential
 sleep 1 
 
 ## Enable Kerberos
@@ -112,9 +113,9 @@ echo "{
   }
 }" > /tmp/payload.enable_kerberos
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/payload.enable_kerberos http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/payload.enable_kerberos http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/
 sleep 3
 ## Start all the services :
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"ServiceInfo": {"state" : "STARTED"}}' http://$AMBARI_SERVER:8080/api/v1/clusters/$cluster_name/services
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"ServiceInfo": {"state" : "STARTED"}}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/services
 sleep 300
