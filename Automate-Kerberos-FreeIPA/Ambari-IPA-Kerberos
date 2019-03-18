@@ -4,7 +4,7 @@
 
 AMBARI_SERVER=`grep node1 /etc/hosts | awk '{print $2}'`
 REALM=`hostname -d| awk '{print toupper($0)}'`
-KDC=`grep node2 /etc/hosts | awk '{print $2}'`
+KDC=`grep node1 /etc/hosts | awk '{print $2}'`
 PRINCIPAL=admin@`hostname -d| awk '{print toupper($0)}'`
 PASSWORD=secret#1
 AMBARI_PASSWORD=$1
