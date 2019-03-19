@@ -94,6 +94,8 @@ h4=`grep node4 /etc/hosts | awk '{print $2}'`
 
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h1
 sleep 2
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X  PUT -d '{"HostRoles": {"state" : "INSTALLED"}}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts/$AMBARI_SERVER/host_components/KERBEROS_CLIENT
+sleep 2
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h2
 sleep 2
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h3
