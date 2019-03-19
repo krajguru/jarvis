@@ -104,7 +104,7 @@ sleep 2
 # Stop all services
 
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d '{"RequestInfo":{"context":"Stop Service"},"Body":{"ServiceInfo":{"state":"INSTALLED"}}}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/services
-sleep 70
+sleep 300
 
 # Set the Kerberos Descriptor
 
