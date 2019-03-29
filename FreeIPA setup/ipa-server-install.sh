@@ -62,11 +62,11 @@ case "$OS_VERSION" in
            
         ## Edit resolv.conf to point to IPA server's DNS
         
-           echo "service sssd restart" > /tmp/dns.sh ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /tmp/dns.sh ; echo "echo \"nameserver \`grep node1 /etc/hosts | awk -F ' ' '{print \$1}'\`\" >> /etc/resolv.conf" >> /tmp/dns.sh ; chmod 777 /tmp/dns.sh
+           echo "service sssd restart" > /tmp/dns.sh ; echo "echo \"search `hostname -d`\" > /etc/resolv.conf" >> /tmp/dns.sh ; echo "echo \"nameserver \`grep node1 /etc/hosts | awk -F ' ' '{print \$1}' | head -n1 \`\" >> /etc/resolv.conf" >> /tmp/dns.sh ; chmod 777 /tmp/dns.sh
            echo "domain=\$(hostname -d)" >> /tmp/dns.sh
            echo "host=\$(hostname -s)" >> /tmp/dns.sh
            echo "a_rec=\$(nslookup \`hostname -s\` | tail -n2 | head -n1 | awk -F ' ' '{print \$2}')" >> /tmp/dns.sh
-           echo "a_ip_addr=\$(grep \$host  /etc/hosts | awk '{print \$1}')" >> /tmp/dns.sh
+           echo "a_ip_addr=\$(grep \$host  /etc/hosts | awk '{print \$1}' | head -n1)" >> /tmp/dns.sh
            echo "echo secret#1 | kinit admin" >> /tmp/dns.sh
            echo "ipa dnsrecord-mod \$domain. \$host --a-rec=\$a_rec --a-ip-address=\$a_ip_addr" >> /tmp/dns.sh
            echo "exit 0" >> /tmp/dns.sh
