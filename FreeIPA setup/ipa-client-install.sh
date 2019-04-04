@@ -20,7 +20,7 @@ chmod 777 /tmp/dns.sh
 
 ## Setup a systemd servive                     
          
-           echo -e "[Unit]\nDescription=Update IPA DNS Records after IP change\nAfter=network.target\n\n[Service]\nType=simple\nUser=root\nExecStart=/bin/bash /tmp/dns.sh\n\n[Install]\nWantedBy=multi-user.target" > /etc/systemd/system/ipa-dns-update.service
+           echo -e "[Unit]\nDescription=Update IPA DNS Records after IP change\nAfter=ipa.service\n\n[Service]\nType=simple\nUser=root\nExecStart=/bin/bash /tmp/dns.sh\n\n[Install]\nWantedBy=multi-user.target" > /etc/systemd/system/ipa-dns-update.service
            chmod 664 /etc/systemd/system/ipa-dns-update.service
            systemctl daemon-reload
            systemctl enable ipa-dns-update.service
