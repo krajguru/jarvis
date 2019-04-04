@@ -70,8 +70,18 @@ case "$OS_VERSION" in
            echo "echo secret#1 | kinit admin" >> /tmp/dns.sh
            echo "ipa dnsrecord-mod \$domain. \$host --a-rec=\$a_rec --a-ip-address=\$a_ip_addr" >> /tmp/dns.sh
            echo "exit 0" >> /tmp/dns.sh
-           sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
-           sh /tmp/dns.sh
+           chmod 777 /tmp/dns.sh
+           
+           ##sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
+           ##sh /tmp/dns.sh
+        
+        ## Setup a systemd servive                     
+         
+           echo -e "[Unit]\nDescription=Update IPA DNS Records after IP change\nAfter=network.target\n\n[Service]\nType=simple\nUser=root\nExecStart=/bin/bash /tmp/dns.sh\n\n[Install]\nWantedBy=multi-user.target" > /etc/systemd/system/ipa-dns-update.service
+           chmod 664 /etc/systemd/system/ipa-dns-update.service
+           systemctl daemon-reload
+           systemctl enable ipa-dns-update.service
+           systemctl start ipa-dns-update.service
            
            #rm -rf $USERS $GROUPS /tmp/ipa-add-users.sh /tmp/ipa-add-groups.txt
         ;;
