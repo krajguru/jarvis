@@ -12,12 +12,16 @@ echo "service sssd restart" > /tmp/dns.sh ; echo "echo \"search `hostname -d`\" 
            echo "a_ip_addr=\$(grep \$host  /etc/hosts | awk '{print \$1}' | head -n1 )" >> /tmp/dns.sh
            echo "echo secret#1 | kinit admin" >> /tmp/dns.sh
            echo "ipa dnsrecord-mod \$domain. \$host --a-rec=\$a_rec --a-ip-address=\$a_ip_addr" >> /tmp/dns.sh
-sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
-sh /tmp/dns.sh
+
+##sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
+##sh /tmp/dns.sh
+
+chmod 777 /tmp/dns.sh
+
 
 ## Setup IPA Client
 
-ipa-client-install --password 'secret#1' --domain `hostname -d` --server `grep node1 /etc/hosts | awk '{print $2}'` --principal admin@`hostname -d| awk '{print toupper($0)}'` --password secret#1 --enable-dns-updates --unattended
+ipa-client-install --password 'secret#1' --domain `hostname -d` --server `grep node1 /etc/hosts | awk '{print $2}' | head -n1` --principal admin@`hostname -d| awk '{print toupper($0)}'` --password secret#1 --enable-dns-updates --unattended
 
 ## Change the Kerberos cache to FILE cache from KEYRING
 
