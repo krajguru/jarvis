@@ -85,23 +85,41 @@ curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X PUT -d @/tmp/pay
 
 sleep 1
 
-# Create the KERBEROS_CLIENT host components , for each host
 
-h1=`grep node1 /etc/hosts | awk '{print $2}'`
-h2=`grep node2 /etc/hosts | awk '{print $2}'`
-h3=`grep node3 /etc/hosts | awk '{print $2}'`
-h4=`grep node4 /etc/hosts | awk '{print $2}'`
 
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h1
+## To install KERBEROS_CLIENT and HDFS_CLIENT on Ambari node we need to perform separetly , since Ambari Server does not have any other component
+
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$AMBARI_SERVER
 sleep 2
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X  PUT -d '{"HostRoles": {"state" : "INSTALLED"}}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts/$AMBARI_SERVER/host_components/KERBEROS_CLIENT
-sleep 2
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h2
-sleep 2
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h3
-sleep 2
-curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$h4
-sleep 2
+sleep 5
+
+
+
+## Create the KERBEROS_CLIENT host components , for each host
+
+num_of_nodes=$(curl -s  -H "X-Requested-By:ambari" -u admin:krajguru -X GET http://c136-node1.ipa.local:8081/api/v1/clusters/c136/hosts | grep host_name | awk -F '"' '{print $4}' | wc -l)
+
+for (( i=2; i<=$num_of_nodes; i++ ))
+do
+host_name=`grep node$i /etc/hosts | awk '{print $2}'`
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$host_name
+sleep 1
+done
+
+## If GSSPROXY Keytabs gets invalidated because of the above process , extract the new keytab from IPA and replace it :
+
+echo secret#1 | kinit admin
+
+kinit -kt /var/lib/ipa/gssproxy/http.keytab HTTP/`hostname -f`
+
+var1=`echo $?`
+
+if [ $var1 -gt 0 ] 
+then
+  kadmin.local -q "xst -k /var/lib/ipa/gssproxy/http.keytab HTTP/`hostname -f`"
+fi
+
 
 # Stop all services
 
