@@ -64,7 +64,7 @@ case "$OS_VERSION" in
            
         ## Edit resolv.conf to point to IPA server's DNS
         
-           echo "s1=\$(hostname -d)" >> /tmp/dns.sh
+           echo "s1=\$(hostname -d)" > /tmp/dns.sh
            echo "s2=\$(grep search /etc/resolv.conf | awk -F ' ' '{print $2}')" >> /tmp/dns.sh
            echo "n1=\$(grep node1 /etc/hosts | awk -F ' ' '{print $1}' | head -n1)" >> /tmp/dns.sh
            echo "n2=\$(grep nameserver /etc/resolv.conf | awk -F ' ' '{print $2}')" >> /tmp/dns.sh
