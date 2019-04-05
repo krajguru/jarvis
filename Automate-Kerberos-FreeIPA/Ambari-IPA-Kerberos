@@ -97,7 +97,7 @@ sleep 5
 
 ## Create the KERBEROS_CLIENT host components , for each host
 
-num_of_nodes=$(curl -s  -H "X-Requested-By:ambari" -u admin:krajguru -X GET http://c136-node1.ipa.local:8081/api/v1/clusters/c136/hosts | grep host_name | awk -F '"' '{print $4}' | wc -l)
+num_of_nodes=$(curl -s  -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -X GET http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts | grep host_name | awk -F '"' '{print $4}' | wc -l)
 
 for (( i=2; i<=$num_of_nodes; i++ ))
 do
