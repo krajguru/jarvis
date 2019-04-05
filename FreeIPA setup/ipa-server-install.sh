@@ -62,8 +62,31 @@ case "$OS_VERSION" in
            
            
            
-        ## Edit resolv.conf to point to IPA server's DNS
+        ## Script to check validity of HTTP keytab for GSSPROXY (IPA) and to edit resolv.conf to point to IPA server's DNS
         
+echo "if [ -f /etc/security/keytabs/spnego.service.keytab ]" > /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "then" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "if [ -L /var/lib/ipa/gssproxy/http.keytab ]" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "then" >> /etc/gssproxy-ipa-httpkeytab-validity.sh 
+echo "exit 0" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "else" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "rm -rf /var/lib/ipa/gssproxy/http.keytab" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "ln -s /etc/security/keytabs/spnego.service.keytab /var/lib/ipa/gssproxy/http.keytab" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "chmod 666 /etc/security/keytabs/spnego.service.keytab" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "fi" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "else" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "kinit -kt /var/lib/ipa/gssproxy/http.keytab HTTP/`hostname -f`" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "var1=\`echo \$?\`" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "if [ \$var1 -gt 0 ]" >> /etc/gssproxy-ipa-httpkeytab-validity.sh 
+echo "then" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "echo secret#1 | kinit admin" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "rm -rf /var/lib/ipa/gssproxy/http.keytab" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "kadmin.local -q \"xst -k /var/lib/ipa/gssproxy/http.keytab HTTP/`hostname -f`\"" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "fi" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+echo "fi" >> /etc/gssproxy-ipa-httpkeytab-validity.sh
+
+chmod 770 /etc/gssproxy-ipa-httpkeytab-validity.sh
+
            echo "s1=\$(hostname -d)" > /tmp/dns.sh
            echo "s2=\$(grep search /etc/resolv.conf | awk -F ' ' '{print $2}')" >> /tmp/dns.sh
            echo "n1=\$(grep node1 /etc/hosts | awk -F ' ' '{print $1}' | head -n1)" >> /tmp/dns.sh
@@ -87,9 +110,10 @@ case "$OS_VERSION" in
            ##sed -i '/systemctl start sshd/ash /tmp/dns.sh' /start
            sh /tmp/dns.sh
         
-           ## Crontab to run it on every reboot 
+           ## Crontab to run the validity scripts 
            
            echo "* * * * * root /tmp/dns.sh" >> /etc/crontab 
+           echo "* * * * * root /etc/gssproxy-ipa-httpkeytab-validity.sh" >> /etc/crontab
         ## Setup a systemd servive                     
          
            ##echo -e "[Unit]\nDescription=Update IPA DNS Records after IP change\nAfter=ipa.service\n\n[Service]\nType=simple\nUser=root\nExecStart=/bin/bash /tmp/dns.sh\n\n[Install]\nWantedBy=multi-user.target" > /etc/systemd/system/ipa-dns-update.service
