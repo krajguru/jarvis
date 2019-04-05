@@ -86,7 +86,7 @@ sleep 1
 
 
 
-## To install KERBEROS_CLIENT and HDFS_CLIENT on Ambari node we need to perform separetly , since Ambari Server does not have any other component
+## To install KERBEROS_CLIENT on Ambari node we need to perform separetly , since Ambari Server does not have any other component
 
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$AMBARI_SERVER
 sleep 2
@@ -102,8 +102,11 @@ num_of_nodes=$(curl -s  -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -X 
 for (( i=2; i<=$num_of_nodes; i++ ))
 do
 host_name=`grep node$i /etc/hosts | awk '{print $2}'`
+echo $host_name >> /tmp/install_kerberos_client
+echo "curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$host_name
+" >> /tmp/install_kerberos_client
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST -d '{"host_components" : [{"HostRoles" : {"component_name":"KERBEROS_CLIENT"}}]}' http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts?Hosts/host_name=$host_name
-sleep 1
+sleep 2
 done
 
 ## If GSSPROXY Keytabs gets invalidated because of the above process , extract the new keytab from IPA and replace it :
