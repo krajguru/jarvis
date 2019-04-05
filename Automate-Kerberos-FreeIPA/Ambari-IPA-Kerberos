@@ -16,8 +16,6 @@ cluster_name="$(curl -u admin:$AMBARI_PASSWORD -i -H 'X-Requested-By: ambari'  h
 
 ## Add Ambari Server host as part of the cluster
 
-yum install -y -q ambari-agent
-ambari-agent start
 ambari-agent status
 
 var=`echo $?`
@@ -25,6 +23,7 @@ var=`echo $?`
 if [ $var -gt 0 ] 
 then
 ambari-agent restart
+curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts/$AMBARI_SERVER
 else
 curl -H "X-Requested-By:ambari" -u admin:$AMBARI_PASSWORD -i -X POST http://$AMBARI_SERVER:$PORT/api/v1/clusters/$cluster_name/hosts/$AMBARI_SERVER
 fi
