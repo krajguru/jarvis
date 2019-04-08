@@ -2,9 +2,4 @@ support
 engineering
 admin
 interns
-hr
-sales
-finance
-qe
 data_scientists
-bi_users
