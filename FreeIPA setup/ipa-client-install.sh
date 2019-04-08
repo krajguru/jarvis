@@ -1,7 +1,10 @@
 #!/bin/bash
 
-yum install -y -q ipa-client
+yum install -y -q ipa-client cronie
 service messagebus restart
+
+systemctl enable crond.service
+systemctl start crond.service
 
 ## Edit resolv.conf to point to IPA server's DNS 
 
