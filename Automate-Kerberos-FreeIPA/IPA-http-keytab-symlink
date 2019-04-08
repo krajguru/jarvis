@@ -1,9 +1,0 @@
-#!/bin/bash
-
-## Run this script on IPA server after kerberising the cluster against FreeIPA
-
-# Point the IPA HTTP keytab on node2 [IPA Server] to the spnego keytab newly generated
-
-rm -rf /var/lib/ipa/gssproxy/http.keytab
-ln -s /etc/security/keytabs/spnego.service.keytab /var/lib/ipa/gssproxy/http.keytab
-chmod 666 /etc/security/keytabs/spnego.service.keytab
