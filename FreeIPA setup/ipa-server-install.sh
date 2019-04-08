@@ -9,11 +9,14 @@
 
 ## Change the default port of Ambari server to 8081 as IPA servers port conflicts with Ambari 
 
-yum install -y -q ambari-agent
+yum install -y -q ambari-agent cronie
 ambari-agent start
 
 echo client.api.port=8081 >> /etc/ambari-server/conf/ambari.properties
 ambari-server restart
+
+systemctl enable crond.service
+systemctl start crond.service
 
 source /tmp/ipa-setup.properties
 
